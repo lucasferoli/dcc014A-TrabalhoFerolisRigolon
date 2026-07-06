@@ -16,7 +16,7 @@ def iniciar_interface():
     pygame.init()
     
     # Configurações da Tela
-    LARGURA, ALTURA = 800, 400 
+    LARGURA, ALTURA = 800, 400
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Resolução - Régua Puzzle")
 
@@ -32,12 +32,12 @@ def iniciar_interface():
     FONTE_BLOCO = pygame.font.Font(None, 80)
     FONTE_MENU = pygame.font.Font(None, 40)
     FONTE_TITULO = pygame.font.Font(None, 60)
+    FONTE_PEQUENA = pygame.font.Font(None, 30)
 
     # ---------------------------------------------------
     # TELA 1: MENU DE SELEÇÃO
     # ---------------------------------------------------
     def menu_selecao():
-        # Definição dos botões (Texto, ID_Lógica, Retângulo de Colisão)
         largura_botao, altura_botao = 400, 50
         centro_x = LARGURA // 2 - largura_botao // 2
         
@@ -54,14 +54,12 @@ def iniciar_interface():
         while rodando_menu:
             TELA.fill(COR_FUNDO)
             
-            # Título do Menu
             titulo = FONTE_TITULO.render("Escolha o Algoritmo de Busca", True, (50, 50, 50))
             TELA.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 30))
 
             mouse_pos = pygame.mouse.get_pos()
             mouse_click = False
 
-            # Captura de eventos do menu
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     pygame.quit()
@@ -69,11 +67,9 @@ def iniciar_interface():
                 if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                     mouse_click = True
 
-            # Desenha e checa os botões
             for botao in botoes:
                 cor_atual = COR_BOTAO
                 
-                # Efeito Hover (passar o mouse por cima)
                 if botao["rect"].collidepoint(mouse_pos):
                     cor_atual = COR_BOTAO_HOVER
                     if mouse_click:
@@ -82,7 +78,6 @@ def iniciar_interface():
 
                 pygame.draw.rect(TELA, cor_atual, botao["rect"], border_radius=10)
                 
-                # Texto do botão
                 texto_surface = FONTE_MENU.render(botao["texto"], True, COR_TEXTO)
                 rect_texto = texto_surface.get_rect(center=botao["rect"].center)
                 TELA.blit(texto_surface, rect_texto)
@@ -94,7 +89,7 @@ def iniciar_interface():
     # ---------------------------------------------------
     # TELA 2: ANIMAÇÃO DA RESOLUÇÃO
     # ---------------------------------------------------
-    def desenhar_estado(estado, passo_atual, total_passos, nome_algoritmo):
+    def desenhar_estado(estado, passo_atual, total_passos, nome_algoritmo, rect_voltar, cor_voltar):
         TELA.fill(COR_FUNDO)
         
         tamanho_bloco = 100
@@ -117,72 +112,88 @@ def iniciar_interface():
                 rect_texto = texto.get_rect(center=(x + tamanho_bloco // 2, y + tamanho_bloco // 2))
                 TELA.blit(texto, rect_texto)
 
-        # Indicadores de texto na tela
-        fonte_pequena = pygame.font.Font(None, 36)
-        texto_passo = fonte_pequena.render(f"Passo: {passo_atual} / {total_passos}", True, (50, 50, 50))
-        texto_alg = fonte_pequena.render(f"Algoritmo: {nome_algoritmo}", True, (50, 50, 50))
+        # Textos informativos no canto superior esquerdo
+        fonte_info = pygame.font.Font(None, 36)
+        texto_passo = fonte_info.render(f"Passo: {passo_atual} / {total_passos}", True, (50, 50, 50))
+        texto_alg = fonte_info.render(f"Algoritmo: {nome_algoritmo}", True, (50, 50, 50))
         
         TELA.blit(texto_passo, (20, 20))
         TELA.blit(texto_alg, (20, 50))
+
+        # Desenhar Botão de Voltar no canto superior direito
+        pygame.draw.rect(TELA, cor_voltar, rect_voltar, border_radius=8)
+        texto_voltar = FONTE_PEQUENA.render("Voltar ao Menu", True, COR_TEXTO)
+        rect_texto_voltar = texto_voltar.get_rect(center=rect_voltar.center)
+        TELA.blit(texto_voltar, rect_texto_voltar)
                 
         pygame.display.flip()
 
-    # --- FLUXO PRINCIPAL ---
-    
-    # 1. Abre o Menu e espera a escolha do usuário
-    algoritmo_escolhido = menu_selecao()
-    estado_inicial = ['B', 'A', '_', 'A', 'B']
-    
-    print(f"Calculando a solução usando {algoritmo_escolhido}...")
-    
-    # 2. Instancia a lógica correta baseada na escolha
-    if algoritmo_escolhido == "BFS":
-        puzzle = ReguaPuzzleBFS(estado_inicial)
-        resultado = puzzle.buscar()
-    elif algoritmo_escolhido == "DLS":
-        puzzle = ReguaPuzzleDLS(estado_inicial)
-        resultado = puzzle.buscar(limite_profundidade=15) # Limite estipulado
-    elif algoritmo_escolhido == "ORD":
-        puzzle = ReguaPuzzleBuscaOrdenada(estado_inicial)
-        resultado = puzzle.buscar()
-    elif algoritmo_escolhido == "BCK":
-        puzzle = ReguaPuzzleBacktracking(estado_inicial)
-        resultado = puzzle.buscar()
-
-    # Extrai o caminho do dicionário de resultados
-    caminho_solucao = resultado.get("caminho")
-
-    if not caminho_solucao:
-        print("Nenhuma solução encontrada com esse algoritmo ou limite!")
-        pygame.quit()
-        return
-
-    # 3. Roda a animação
-    passo_atual = 0
-    rodando = True
-    relogio = pygame.time.Clock()
-    
-    ultimo_tempo = pygame.time.get_ticks()
-    intervalo_animacao = 1000 
-
-    while rodando:
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                rodando = False
-
-        tempo_atual = pygame.time.get_ticks()
-        if tempo_atual - ultimo_tempo > intervalo_animacao:
-            if passo_atual < len(caminho_solucao) - 1:
-                passo_atual += 1
-            ultimo_tempo = tempo_atual
-
-        estado_para_desenhar = caminho_solucao[passo_atual]
-        desenhar_estado(estado_para_desenhar, passo_atual, len(caminho_solucao) - 1, algoritmo_escolhido)
+    # --- FLUXO PRINCIPAL (LOOP MESTRE) ---
+    # Este loop garante que ao sair da animação, o menu volte a aparecer
+    while True:
         
-        relogio.tick(60)
+        algoritmo_escolhido = menu_selecao()
+        estado_inicial = ['B', 'A', '_', 'A', 'B']
+        
+        print(f"Calculando a solução usando {algoritmo_escolhido}...")
+        
+        if algoritmo_escolhido == "BFS":
+            puzzle = ReguaPuzzleBFS(estado_inicial)
+            resultado = puzzle.buscar()
+        elif algoritmo_escolhido == "DLS":
+            puzzle = ReguaPuzzleDLS(estado_inicial)
+            resultado = puzzle.buscar(limite_profundidade=15)
+        elif algoritmo_escolhido == "ORD":
+            puzzle = ReguaPuzzleBuscaOrdenada(estado_inicial)
+            resultado = puzzle.buscar()
+        elif algoritmo_escolhido == "BCK":
+            puzzle = ReguaPuzzleBacktracking(estado_inicial)
+            resultado = puzzle.buscar()
 
-    pygame.quit()
-    sys.exit()
+        caminho_solucao = resultado.get("caminho")
+
+        if not caminho_solucao:
+            print("Nenhuma solução encontrada com esse algoritmo ou limite!")
+            continue # Em vez de fechar, volta pro menu
+
+        passo_atual = 0
+        rodando_animacao = True
+        relogio = pygame.time.Clock()
+        
+        ultimo_tempo = pygame.time.get_ticks()
+        intervalo_animacao = 1000 
+
+        # Definição do botão voltar
+        largura_voltar, altura_voltar = 160, 40
+        rect_voltar = pygame.Rect(LARGURA - largura_voltar - 20, 20, largura_voltar, altura_voltar)
+
+        while rodando_animacao:
+            cor_voltar = COR_BOTAO
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_click = False
+
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                    mouse_click = True
+
+            # Checa clique no botão voltar
+            if rect_voltar.collidepoint(mouse_pos):
+                cor_voltar = COR_BOTAO_HOVER
+                if mouse_click:
+                    rodando_animacao = False # Quebra este loop e volta pro While True (Menu)
+
+            tempo_atual = pygame.time.get_ticks()
+            if tempo_atual - ultimo_tempo > intervalo_animacao:
+                if passo_atual < len(caminho_solucao) - 1:
+                    passo_atual += 1
+                ultimo_tempo = tempo_atual
+
+            desenhar_estado(caminho_solucao[passo_atual], passo_atual, len(caminho_solucao) - 1, algoritmo_escolhido, rect_voltar, cor_voltar)
+            
+            relogio.tick(60)
 
 if __name__ == "__main__":
     iniciar_interface()
