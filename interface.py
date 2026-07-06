@@ -13,6 +13,7 @@ from logica.busca_dls import ReguaPuzzleDLS
 from logica.busca_ordenada import ReguaPuzzleBuscaOrdenada
 from logica.busca_backtracking import ReguaPuzzleBacktracking
 from logica.busca_a import ReguaPuzzleBuscaAEstrela
+from logica.busca_gulosa import ReguaPuzzleBuscaGulosa
 
 # ==========================================
 # 1. INTERFACE VISUAL COM PYGAME
@@ -22,7 +23,7 @@ def iniciar_interface():
     pygame.init()
     
     # Configurações da Tela
-    LARGURA, ALTURA = 900, 500
+    LARGURA, ALTURA = 1000, 500
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Resolução - Régua Puzzle")
 
@@ -52,7 +53,9 @@ def iniciar_interface():
             {"texto": "Profundidade Limitada (DLS)", "id": "DLS", "rect": pygame.Rect(centro_x, 170, largura_botao, altura_botao)},
             {"texto": "Busca Ordenada", "id": "ORD", "rect": pygame.Rect(centro_x, 240, largura_botao, altura_botao)},
             {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 310, largura_botao, altura_botao)},
-            {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)}
+            {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)},
+            {"texto": "Busca Gulosa", "id": "GUL", "rect": pygame.Rect(centro_x, 450, largura_botao, altura_botao)}
+
         ]
 
         rodando_menu = True
@@ -144,6 +147,10 @@ def iniciar_interface():
         
         print(f"Calculando a solução usando {algoritmo_escolhido}...")
         
+        # 1. Declaramos resultado como um dicionário vazio por segurança
+        resultado = {} 
+        
+        # 2. Verificamos qual algoritmo rodar
         if algoritmo_escolhido == "BFS":
             puzzle = ReguaPuzzleBFS(estado_inicial)
             resultado = puzzle.buscar()
@@ -159,12 +166,17 @@ def iniciar_interface():
         elif algoritmo_escolhido == "AST":
             puzzle = ReguaPuzzleBuscaAEstrela(estado_inicial)
             resultado = puzzle.buscar()
+        # Aceitamos tanto "GULOSA" quanto "GUL" para evitar falhas de digitação no ID do botão
+        elif algoritmo_escolhido in ["GULOSA", "GUL"]: 
+            puzzle = ReguaPuzzleBuscaGulosa(estado_inicial)
+            resultado = puzzle.buscar()
 
-        caminho_solucao = resultado.get("caminho")
+        # Agora o .get() funciona com segurança, mesmo se o resultado for um dicionário vazio
+        caminho_solucao = resultado.get("caminho") 
 
         if not caminho_solucao:
             print("Nenhuma solução encontrada com esse algoritmo ou limite!")
-            continue # Em vez de fechar, volta pro menu
+            continue # Volta pro menu
 
         passo_atual = 0
         rodando_animacao = True
