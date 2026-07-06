@@ -17,14 +17,33 @@ from logica.busca_gulosa import ReguaPuzzleBuscaGulosa
 from logica.busca_ida import ReguaPuzzleBuscaIDAEstrela
 
 # ==========================================
+# FUNÇÃO GERADORA DE ESTADOS INICIAIS
+# ==========================================
+def gerar_estado_inicial(N):
+    """
+    Gera um tabuleiro embaralhado baseado no tamanho N.
+    Ex: N=1 -> ['A', '_', 'B']
+    Ex: N=2 -> ['B', 'A', '_', 'A', 'B']
+    """
+    estado = []
+    # Metade esquerda
+    for i in range(N):
+        estado.append('A' if (N - i) % 2 != 0 else 'B')
+    # Centro
+    estado.append('_')
+    # Metade direita
+    for i in range(N):
+        estado.append('B' if (N - i) % 2 != 0 else 'A')
+    return estado
+
+# ==========================================
 # 1. INTERFACE VISUAL COM PYGAME
 # ==========================================
 def iniciar_interface():
-    # Inicializa o Pygame
     pygame.init()
     
-    # Configurações da Tela
-    LARGURA, ALTURA = 1000, 500
+    # Configurações da Tela (Aumentada para caber o seletor e botões)
+    LARGURA, ALTURA = 1000, 700
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Resolução - Régua Puzzle")
 
@@ -49,24 +68,30 @@ def iniciar_interface():
         largura_botao, altura_botao = 400, 50
         centro_x = LARGURA // 2 - largura_botao // 2
         
+        # Variáveis do Seletor
+        N_atual = 2
+        btn_menos = pygame.Rect(LARGURA // 2 - 120, 100, 50, 40)
+        btn_mais = pygame.Rect(LARGURA // 2 + 70, 100, 50, 40)
+        
+        # Botões de algoritmos (deslocados mais para baixo)
         botoes = [
-            {"texto": "Busca em Largura (BFS)", "id": "BFS", "rect": pygame.Rect(centro_x, 100, largura_botao, altura_botao)},
-            {"texto": "Profundidade Limitada (DLS)", "id": "DLS", "rect": pygame.Rect(centro_x, 170, largura_botao, altura_botao)},
-            {"texto": "Busca Ordenada", "id": "ORD", "rect": pygame.Rect(centro_x, 240, largura_botao, altura_botao)},
-            {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 310, largura_botao, altura_botao)},
-            {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)},
-            {"texto": "Busca Gulosa", "id": "GUL", "rect": pygame.Rect(centro_x, 450, largura_botao, altura_botao)},
-            {"texto": "Busca IDA* (IDA Estrela)", "id": "IDA", "rect": pygame.Rect(centro_x, 520, largura_botao, altura_botao)}
-
+            {"texto": "Busca em Largura (BFS)", "id": "BFS", "rect": pygame.Rect(centro_x, 260, largura_botao, altura_botao)},
+            {"texto": "Profundidade Limitada (DLS)", "id": "DLS", "rect": pygame.Rect(centro_x, 320, largura_botao, altura_botao)},
+            {"texto": "Busca Ordenada", "id": "ORD", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)},
+            {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 440, largura_botao, altura_botao)},
+            {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 500, largura_botao, altura_botao)},
+            {"texto": "Busca Gulosa", "id": "GUL", "rect": pygame.Rect(centro_x, 560, largura_botao, altura_botao)},
+            {"texto": "Busca IDA* (IDA Estrela)", "id": "IDA", "rect": pygame.Rect(centro_x, 620, largura_botao, altura_botao)}
         ]
 
         rodando_menu = True
-        escolha = None
+        escolha_algoritmo = None
 
         while rodando_menu:
             TELA.fill(COR_FUNDO)
             
-            titulo = FONTE_TITULO.render("Escolha o Algoritmo de Busca", True, (50, 50, 50))
+            # Título
+            titulo = FONTE_TITULO.render("Régua Puzzle - Configuração", True, (50, 50, 50))
             TELA.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 30))
 
             mouse_pos = pygame.mouse.get_pos()
@@ -79,13 +104,42 @@ def iniciar_interface():
                 if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                     mouse_click = True
 
+            # --- DESENHO DO SELETOR DE N ---
+            # Botão Menos
+            cor_menos = COR_BOTAO_HOVER if btn_menos.collidepoint(mouse_pos) else COR_BOTAO
+            pygame.draw.rect(TELA, cor_menos, btn_menos, border_radius=5)
+            texto_menos = FONTE_MENU.render("-", True, COR_TEXTO)
+            TELA.blit(texto_menos, texto_menos.get_rect(center=btn_menos.center))
+            if btn_menos.collidepoint(mouse_pos) and mouse_click and N_atual > 1:
+                N_atual -= 1
+
+            # Texto do N atual
+            texto_n = FONTE_MENU.render(f"N = {N_atual}", True, (50, 50, 50))
+            TELA.blit(texto_n, texto_n.get_rect(center=(LARGURA // 2, 120)))
+
+            # Botão Mais
+            cor_mais = COR_BOTAO_HOVER if btn_mais.collidepoint(mouse_pos) else COR_BOTAO
+            pygame.draw.rect(TELA, cor_mais, btn_mais, border_radius=5)
+            texto_mais = FONTE_MENU.render("+", True, COR_TEXTO)
+            TELA.blit(texto_mais, texto_mais.get_rect(center=btn_mais.center))
+            if btn_mais.collidepoint(mouse_pos) and mouse_click and N_atual < 5: 
+                # Limitamos N a 5 para evitar travamentos, pois tabuleiros gigantes demoram muito
+                N_atual += 1
+
+            # Preview do Array Gerado
+            estado_preview = gerar_estado_inicial(N_atual)
+            texto_preview = FONTE_PEQUENA.render(f"Estado Inicial: {' '.join(estado_preview)}", True, (100, 100, 100))
+            TELA.blit(texto_preview, texto_preview.get_rect(center=(LARGURA // 2, 180)))
+            pygame.draw.line(TELA, (200, 200, 200), (LARGURA//2 - 300, 220), (LARGURA//2 + 300, 220), 2)
+
+            # --- DESENHO DOS BOTÕES DE ALGORITMO ---
             for botao in botoes:
                 cor_atual = COR_BOTAO
                 
                 if botao["rect"].collidepoint(mouse_pos):
                     cor_atual = COR_BOTAO_HOVER
                     if mouse_click:
-                        escolha = botao["id"]
+                        escolha_algoritmo = botao["id"]
                         rodando_menu = False
 
                 pygame.draw.rect(TELA, cor_atual, botao["rect"], border_radius=10)
@@ -96,7 +150,7 @@ def iniciar_interface():
 
             pygame.display.flip()
             
-        return escolha
+        return escolha_algoritmo, gerar_estado_inicial(N_atual)
 
     # ---------------------------------------------------
     # TELA 2: ANIMAÇÃO DA RESOLUÇÃO
@@ -104,10 +158,15 @@ def iniciar_interface():
     def desenhar_estado(estado, passo_atual, total_passos, nome_algoritmo, rect_voltar, cor_voltar):
         TELA.fill(COR_FUNDO)
         
-        tamanho_bloco = 100
-        espaco = 20
-        margem_x = (LARGURA - (len(estado) * tamanho_bloco + (len(estado) - 1) * espaco)) // 2
+        # Ajusta o tamanho do bloco se o N for muito grande para caber na tela
+        max_blocos = len(estado)
+        tamanho_bloco = min(100, (LARGURA - 100) // max_blocos - 10)
+        espaco = 10
+        margem_x = (LARGURA - (max_blocos * tamanho_bloco + (max_blocos - 1) * espaco)) // 2
         margem_y = (ALTURA - tamanho_bloco) // 2
+
+        # Reduz a fonte do bloco se ele ficar pequeno
+        fonte_dinamica = pygame.font.Font(None, int(tamanho_bloco * 0.8))
 
         for i, char in enumerate(estado):
             x = margem_x + i * (tamanho_bloco + espaco)
@@ -120,11 +179,11 @@ def iniciar_interface():
             pygame.draw.rect(TELA, cor, (x, y, tamanho_bloco, tamanho_bloco), border_radius=15)
             
             if char != '_':
-                texto = FONTE_BLOCO.render(char, True, COR_TEXTO)
+                texto = fonte_dinamica.render(char, True, COR_TEXTO)
                 rect_texto = texto.get_rect(center=(x + tamanho_bloco // 2, y + tamanho_bloco // 2))
                 TELA.blit(texto, rect_texto)
 
-        # Textos informativos no canto superior esquerdo
+        # Textos informativos
         fonte_info = pygame.font.Font(None, 36)
         texto_passo = fonte_info.render(f"Passo: {passo_atual} / {total_passos}", True, (50, 50, 50))
         texto_alg = fonte_info.render(f"Algoritmo: {nome_algoritmo}", True, (50, 50, 50))
@@ -132,7 +191,7 @@ def iniciar_interface():
         TELA.blit(texto_passo, (20, 20))
         TELA.blit(texto_alg, (20, 50))
 
-        # Desenhar Botão de Voltar no canto superior direito
+        # Desenhar Botão de Voltar
         pygame.draw.rect(TELA, cor_voltar, rect_voltar, border_radius=8)
         texto_voltar = FONTE_PEQUENA.render("Voltar ao Menu", True, COR_TEXTO)
         rect_texto_voltar = texto_voltar.get_rect(center=rect_voltar.center)
@@ -141,24 +200,22 @@ def iniciar_interface():
         pygame.display.flip()
 
     # --- FLUXO PRINCIPAL (LOOP MESTRE) ---
-    # Este loop garante que ao sair da animação, o menu volte a aparecer
     while True:
+        # Agora o menu retorna DUAS coisas: o algoritmo e o estado configurado
+        algoritmo_escolhido, estado_inicial = menu_selecao()
         
-        algoritmo_escolhido = menu_selecao()
-        estado_inicial = ['B', 'A', '_', 'A', 'B']
+        print(f"Calculando solução para {estado_inicial} usando {algoritmo_escolhido}...")
         
-        print(f"Calculando a solução usando {algoritmo_escolhido}...")
-        
-        # 1. Declaramos resultado como um dicionário vazio por segurança
         resultado = {} 
         
-        # 2. Verificamos qual algoritmo rodar
         if algoritmo_escolhido == "BFS":
             puzzle = ReguaPuzzleBFS(estado_inicial)
             resultado = puzzle.buscar()
         elif algoritmo_escolhido == "DLS":
             puzzle = ReguaPuzzleDLS(estado_inicial)
-            resultado = puzzle.buscar(limite_profundidade=15)
+            # DLS pode precisar de um limite muito maior se o N for grande
+            limite_dinamico = len(estado_inicial) * 4 
+            resultado = puzzle.buscar(limite_profundidade=limite_dinamico)
         elif algoritmo_escolhido == "ORD":
             puzzle = ReguaPuzzleBuscaOrdenada(estado_inicial)
             resultado = puzzle.buscar()
@@ -168,26 +225,27 @@ def iniciar_interface():
         elif algoritmo_escolhido == "AST":
             puzzle = ReguaPuzzleBuscaAEstrela(estado_inicial)
             resultado = puzzle.buscar()
-        # Aceitamos tanto "GULOSA" quanto "GUL" para evitar falhas de digitação no ID do botão
         elif algoritmo_escolhido in ["GULOSA", "GUL"]: 
             puzzle = ReguaPuzzleBuscaGulosa(estado_inicial)
             resultado = puzzle.buscar()
+        elif algoritmo_escolhido == "IDA":
+            puzzle = ReguaPuzzleBuscaIDAEstrela(estado_inicial)
+            resultado = puzzle.buscar()
 
-        # Agora o .get() funciona com segurança, mesmo se o resultado for um dicionário vazio
         caminho_solucao = resultado.get("caminho") 
 
         if not caminho_solucao:
-            print("Nenhuma solução encontrada com esse algoritmo ou limite!")
-            continue # Volta pro menu
+            print("Nenhuma solução encontrada! Tente um algoritmo diferente ou aumente os limites.")
+            continue 
 
         passo_atual = 0
         rodando_animacao = True
         relogio = pygame.time.Clock()
-        
         ultimo_tempo = pygame.time.get_ticks()
-        intervalo_animacao = 1000 
+        
+        # Aumentamos a velocidade da animação para N maiores
+        intervalo_animacao = max(200, 1000 - (len(estado_inicial) * 100)) 
 
-        # Definição do botão voltar
         largura_voltar, altura_voltar = 160, 40
         rect_voltar = pygame.Rect(LARGURA - largura_voltar - 20, 20, largura_voltar, altura_voltar)
 
@@ -203,11 +261,10 @@ def iniciar_interface():
                 if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                     mouse_click = True
 
-            # Checa clique no botão voltar
             if rect_voltar.collidepoint(mouse_pos):
                 cor_voltar = COR_BOTAO_HOVER
                 if mouse_click:
-                    rodando_animacao = False # Quebra este loop e volta pro While True (Menu)
+                    rodando_animacao = False 
 
             tempo_atual = pygame.time.get_ticks()
             if tempo_atual - ultimo_tempo > intervalo_animacao:
