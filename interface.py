@@ -1,12 +1,17 @@
 import pygame
 import sys
-from collections import deque
+import os
+
+# Garantir que a pasta do projeto esteja no sys.path para importar o pacote 'logica'
+PROJETO_ROOT = os.path.dirname(__file__)
+if PROJETO_ROOT not in sys.path:
+    sys.path.append(PROJETO_ROOT)
 
 # Importando todas as lógicas
-from busca_bfs import ReguaPuzzleBFS
-from busca_dls import ReguaPuzzleDLS
-from busca_ordenada import ReguaPuzzleBuscaOrdenada
-from busca_backtracking import ReguaPuzzleBacktracking
+from logica.busca_bfs import ReguaPuzzleBFS
+from logica.busca_dls import ReguaPuzzleDLS
+from logica.busca_ordenada import ReguaPuzzleBuscaOrdenada
+from logica.busca_backtracking import ReguaPuzzleBacktracking
 
 # ==========================================
 # 1. INTERFACE VISUAL COM PYGAME
