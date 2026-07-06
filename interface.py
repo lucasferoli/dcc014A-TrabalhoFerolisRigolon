@@ -12,6 +12,7 @@ from logica.busca_bfs import ReguaPuzzleBFS
 from logica.busca_dls import ReguaPuzzleDLS
 from logica.busca_ordenada import ReguaPuzzleBuscaOrdenada
 from logica.busca_backtracking import ReguaPuzzleBacktracking
+from logica.busca_a import ReguaPuzzleBuscaAEstrela
 
 # ==========================================
 # 1. INTERFACE VISUAL COM PYGAME
@@ -21,7 +22,7 @@ def iniciar_interface():
     pygame.init()
     
     # Configurações da Tela
-    LARGURA, ALTURA = 800, 400
+    LARGURA, ALTURA = 900, 500
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Resolução - Régua Puzzle")
 
@@ -50,7 +51,8 @@ def iniciar_interface():
             {"texto": "Busca em Largura (BFS)", "id": "BFS", "rect": pygame.Rect(centro_x, 100, largura_botao, altura_botao)},
             {"texto": "Profundidade Limitada (DLS)", "id": "DLS", "rect": pygame.Rect(centro_x, 170, largura_botao, altura_botao)},
             {"texto": "Busca Ordenada", "id": "ORD", "rect": pygame.Rect(centro_x, 240, largura_botao, altura_botao)},
-            {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 310, largura_botao, altura_botao)}
+            {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 310, largura_botao, altura_botao)},
+            {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)}
         ]
 
         rodando_menu = True
@@ -153,6 +155,9 @@ def iniciar_interface():
             resultado = puzzle.buscar()
         elif algoritmo_escolhido == "BCK":
             puzzle = ReguaPuzzleBacktracking(estado_inicial)
+            resultado = puzzle.buscar()
+        elif algoritmo_escolhido == "AST":
+            puzzle = ReguaPuzzleBuscaAEstrela(estado_inicial)
             resultado = puzzle.buscar()
 
         caminho_solucao = resultado.get("caminho")
