@@ -14,6 +14,7 @@ from logica.busca_ordenada import ReguaPuzzleBuscaOrdenada
 from logica.busca_backtracking import ReguaPuzzleBacktracking
 from logica.busca_a import ReguaPuzzleBuscaAEstrela
 from logica.busca_gulosa import ReguaPuzzleBuscaGulosa
+from logica.busca_ida import ReguaPuzzleBuscaIDAEstrela
 
 # ==========================================
 # 1. INTERFACE VISUAL COM PYGAME
@@ -54,7 +55,8 @@ def iniciar_interface():
             {"texto": "Busca Ordenada", "id": "ORD", "rect": pygame.Rect(centro_x, 240, largura_botao, altura_botao)},
             {"texto": "Busca Backtracking", "id": "BCK", "rect": pygame.Rect(centro_x, 310, largura_botao, altura_botao)},
             {"texto": "Busca A* (A Estrela)", "id": "AST", "rect": pygame.Rect(centro_x, 380, largura_botao, altura_botao)},
-            {"texto": "Busca Gulosa", "id": "GUL", "rect": pygame.Rect(centro_x, 450, largura_botao, altura_botao)}
+            {"texto": "Busca Gulosa", "id": "GUL", "rect": pygame.Rect(centro_x, 450, largura_botao, altura_botao)},
+            {"texto": "Busca IDA* (IDA Estrela)", "id": "IDA", "rect": pygame.Rect(centro_x, 520, largura_botao, altura_botao)}
 
         ]
 
