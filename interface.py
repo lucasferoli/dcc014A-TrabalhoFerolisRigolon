@@ -199,6 +199,32 @@ def iniciar_interface():
                 
         pygame.display.flip()
 
+    def imprimir_estatisticas(algoritmo, estado_inicial, resultado):
+        caminho = resultado.get("caminho")
+
+        print("\n==================================================")
+        print(f"        RESULTADO DA BUSCA ({algoritmo})")
+        print("==================================================")
+        print(f"Estado inicial: {' '.join(estado_inicial)}")
+
+        if caminho:
+            print("\nCaminho encontrado:")
+            for i, estado in enumerate(caminho):
+                print(f"  Passo {i}: {' '.join(estado)}")
+
+            print("\nMetricas da solucao:")
+            print(f"Profundidade da solucao : {resultado.get('profundidade')}")
+            print(f"Custo total da solucao  : {resultado.get('custo')}")
+        else:
+            print("\nNenhuma solucao encontrada.")
+
+        print("\nMetricas da execucao:")
+        print(f"Nos visitados              : {resultado.get('nos_visitados')}")
+        print(f"Nos expandidos             : {resultado.get('nos_expandidos')}")
+        print(f"Fator de ramificacao medio : {resultado.get('fator_ramificacao_medio', 0):.2f}")
+        print(f"Tempo de execucao          : {resultado.get('tempo_execucao', 0):.6f} segundos")
+        print("==================================================\n")
+
     # --- FLUXO PRINCIPAL (LOOP MESTRE) ---
     while True:
         # Agora o menu retorna DUAS coisas: o algoritmo e o estado configurado
@@ -231,6 +257,8 @@ def iniciar_interface():
         elif algoritmo_escolhido == "IDA":
             puzzle = ReguaPuzzleBuscaIDAEstrela(estado_inicial)
             resultado = puzzle.buscar()
+
+        imprimir_estatisticas(algoritmo_escolhido, estado_inicial, resultado)
 
         caminho_solucao = resultado.get("caminho") 
 
