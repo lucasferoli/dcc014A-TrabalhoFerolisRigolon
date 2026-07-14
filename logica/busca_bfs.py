@@ -7,15 +7,11 @@ class ReguaPuzzleBFS:
         self.estado_inicial = tuple(estado_inicial)
         self.N = (len(estado_inicial) - 1) // 2
 
-        # Estatísticas globais
         self.nos_expandidos = 0
         self.nos_visitados = 0
         self.total_filhos_gerados = 0
 
     def eh_meta(self, estado):
-        """
-        Verifica se o estado é uma meta: nenhum 'B' pode estar à direita de qualquer 'A'.
-        """
         encontrou_A = False
         for char in estado:
             if char == 'A':
@@ -25,10 +21,6 @@ class ReguaPuzzleBFS:
         return True
 
     def obter_sucessores(self, estado):
-        """
-        Gera os estados sucessores válidos e os custos dos movimentos.
-        Regra: distância máxima de N posições até o espaço vazio '_'.
-        """
         sucessores = []
         idx_vazio = estado.index('_')
         tamanho = len(estado)
@@ -55,7 +47,6 @@ class ReguaPuzzleBFS:
         # Conjunto global de visitados para evitar loops de repetição de estados
         visitados = set()
 
-        # Fila para o BFS armazenando: (estado_atual, caminho_ate_aqui, custo_acumulado)
         fila = deque([(self.estado_inicial, [self.estado_inicial], 0)])
         visitados.add(self.estado_inicial)
         self.nos_visitados += 1
@@ -65,7 +56,6 @@ class ReguaPuzzleBFS:
         while fila:
             estado_atual, caminho_atual, custo_atual = fila.popleft()
 
-            # Se atingiu o objetivo, encerra (BFS garante o caminho mais curto em passos)
             if self.eh_meta(estado_atual):
                 solucao = {
                     "caminho": caminho_atual,
@@ -114,9 +104,7 @@ class ReguaPuzzleBFS:
                 "tempo_execucao": tempo_execucao
             }
 
-# --- Exemplo de Execução baseado no enunciado (N=2) ---
 if __name__ == "__main__":
-    # Estado inicial sugerido no PDF para N=2: 'B', 'A', '_', 'A', 'B' [cite: 17, 18]
     estado_inicial_teste = ['B', 'A', '_', 'A', 'B']
 
     print(f"Iniciando Busca em Largura (BFS) para o Estado Inicial: {estado_inicial_teste}\n")

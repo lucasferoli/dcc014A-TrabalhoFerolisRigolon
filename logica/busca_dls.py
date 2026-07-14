@@ -11,9 +11,6 @@ class ReguaPuzzleDLS:
         self.total_filhos_gerados = 0
 
     def eh_meta(self, estado):
-        """
-        Verifica se o estado é uma meta: nenhum 'B' pode estar à direita de qualquer 'A'.
-        """
         encontrou_A = False
         for char in estado:
             if char == 'A':
@@ -23,10 +20,6 @@ class ReguaPuzzleDLS:
         return True
 
     def obter_sucessores(self, estado):
-        """
-        Gera os estados sucessores válidos e os custos dos movimentos.
-        Regra: distância máxima de N posições até o espaço vazio '_'.
-        """
         sucessores = []
         idx_vazio = estado.index('_')
         tamanho = len(estado)
@@ -54,7 +47,6 @@ class ReguaPuzzleDLS:
         caminho_atual = [self.estado_inicial]
         visitados_ramo = {self.estado_inicial}
 
-        # Executa a busca recursiva
         solucao = self._dls_recursivo(
             self.estado_inicial,
             limite_profundidade,
@@ -85,7 +77,6 @@ class ReguaPuzzleDLS:
     def _dls_recursivo(self, estado_atual, limite, caminho, visitados_ramo, custo_atual):
         self.nos_visitados += 1
 
-        # Se atingiu a meta, retorna o resultado imediatamente
         if self.eh_meta(estado_atual):
             return {
                 "caminho": list(caminho),
@@ -93,7 +84,7 @@ class ReguaPuzzleDLS:
                 "custo": custo_atual
             }
 
-        # Se o limite chegou a 0 e não é meta, corta a busca (cutoff)
+        # Se o limite chegou a 0 e não é meta, corta a busca
         if limite <= 0:
             return None
 
@@ -104,7 +95,6 @@ class ReguaPuzzleDLS:
 
         for proximo_estado, custo_movimento in sucessores:
             if proximo_estado not in visitados_ramo:
-                # Avanço
                 visitados_ramo.add(proximo_estado)
                 caminho.append(proximo_estado)
 
@@ -117,20 +107,16 @@ class ReguaPuzzleDLS:
                 )
 
                 if resultado_filho:
-                    return resultado_filho  # Retorna se encontrou a solução
+                    return resultado_filho
 
-                # Backtracking (remover do caminho para testar alternativas)
                 caminho.pop()
                 visitados_ramo.remove(proximo_estado)
 
         return None
 
-# --- Exemplo de Execução baseado no enunciado (N=2) ---
 if __name__ == "__main__":
-    # Estado inicial sugerido no PDF para N=2: 'B', 'A', '_', 'A', 'B'
     estado_inicial_teste = ['B', 'A', '_', 'A', 'B']
 
-    # Definindo um limite arbitrário (ex: 10 passos)
     limite = 10
 
     print(f"Iniciando Busca em Profundidade Limitada (DLS) com Limite = {limite}")
@@ -139,7 +125,6 @@ if __name__ == "__main__":
     puzzle = ReguaPuzzleDLS(estado_inicial_teste)
     resultado = puzzle.buscar(limite_profundidade=limite)
 
-    # Exibição formatada das Estatísticas
     print("==================================================")
     print("            PROPRIEDADES DA SOLUÇÃO (DLS)         ")
     print("==================================================")

@@ -2,7 +2,7 @@ import time
 import sys
 
 
-# Aumenta o limite de recursão para safety em tabuleiros grandes
+# Aumenta o limite de recursão em tabuleiros grandes
 sys.setrecursionlimit(10000)
 
 class ReguaPuzzleBacktracking:
@@ -15,7 +15,6 @@ class ReguaPuzzleBacktracking:
         self.nos_visitados = 0
         self.total_filhos_gerados = 0
 
-        # Controle de histórico para evitar loops no caminho atual
         self.visitados_caminho_atual = set()
 
         # Melhor solução encontrada (caminho, custo)
@@ -23,10 +22,6 @@ class ReguaPuzzleBacktracking:
         self.melhor_custo = float('inf')
 
     def eh_meta(self, estado):
-        """
-        Verifica se o estado é uma meta: nenhum 'B' pode estar à direita de qualquer 'A'.
-        Ou seja, se encontrarmos um 'A', não pode haver nenhum 'B' depois dele.
-        """
         encontrou_A = False
         for char in estado:
             if char == 'A':
@@ -36,10 +31,6 @@ class ReguaPuzzleBacktracking:
         return True
 
     def obter_sucessores(self, estado):
-        """
-        Gera os estados sucessores válidos e os custos dos movimentos.
-        Regra: distância máxima de N posições até o espaço vazio '_'.
-        """
         sucessores = []
         idx_vazio = estado.index('_')
         tamanho = len(estado)
@@ -51,7 +42,6 @@ class ReguaPuzzleBacktracking:
 
             distancia = abs(idx_vazio - idx_bloco)
             if distancia <= self.N:
-                # Gerar o novo estado trocando o bloco com o vazio
                 novo_estado = list(estado)
                 novo_estado[idx_vazio], novo_estado[idx_bloco] = novo_estado[idx_bloco], novo_estado[idx_vazio]
                 sucessores.append((tuple(novo_estado), distancia))
@@ -68,7 +58,6 @@ class ReguaPuzzleBacktracking:
 
         tempo_inicio = time.time()
 
-        # Dispara a busca recursiva a partir do estado inicial
         self._backtracking_recursivo(self.estado_inicial, [self.estado_inicial], 0)
 
         tempo_fim = time.time()
@@ -90,11 +79,9 @@ class ReguaPuzzleBacktracking:
     def _backtracking_recursivo(self, estado_atual, caminho_atual, custo_atual):
         self.nos_visitados += 1
 
-        # Se o custo atual já for pior ou igual à melhor solução achada, podamos o ramo
         if custo_atual >= self.melhor_custo:
             return
 
-        # Se atingiu o objetivo, atualizamos a melhor solução
         if self.eh_meta(estado_atual):
             self.melhor_custo = custo_atual
             self.melhor_caminho = list(caminho_atual)
@@ -105,27 +92,21 @@ class ReguaPuzzleBacktracking:
         sucessores = self.obter_sucessores(estado_atual)
         self.total_filhos_gerados += len(sucessores)
 
-        # Adiciona o estado atual ao conjunto do caminho para evitar ciclos
         self.visitados_caminho_atual.add(estado_atual)
 
-        # Ordenar sucessores pelo menor custo de pulo pode ajudar a achar soluções boas mais rápido (heurística de poda)
         sucessores.sort(key=lambda x: x[1])
 
         for proximo_estado, custo_movimento in sucessores:
             if proximo_estado not in self.visitados_caminho_atual:
-                # Chamada recursiva (avanço)
                 self._backtracking_recursivo(
                     proximo_estado,
                     caminho_atual + [proximo_estado],
                     custo_atual + custo_movimento
                 )
 
-        # Backtrack: remove do conjunto do caminho ao desempilhar a recursão
         self.visitados_caminho_atual.remove(estado_atual)
 
-# --- Exemplo de Execução baseado no enunciado (N=2) ---
 if __name__ == "__main__":
-    # Estado inicial sugerido no PDF para N=2: 'B', 'A', '_', 'A', 'B'
     estado_inicial_teste = ['B', 'A', '_', 'A', 'B']
 
     print(f"Iniciando Busca Backtracking para o Estado Inicial: {estado_inicial_teste}\n")
@@ -133,7 +114,6 @@ if __name__ == "__main__":
     puzzle = ReguaPuzzleBacktracking(estado_inicial_teste)
     resultado = puzzle.buscar()
 
-    # Exibição formatada das Estatísticas
     print("==================================================")
     print("            PROPRIEDADES DA SOLUÇÃO               ")
     print("==================================================")
