@@ -124,7 +124,6 @@ if __name__ == "__main__":
     puzzle = ReguaPuzzleBFS(estado_inicial_teste)
     resultado = puzzle.buscar()
 
-    # Exibição formatada das Estatísticas
     print("==================================================")
     print("            PROPRIEDADES DA SOLUÇÃO (BFS)         ")
     print("==================================================")
