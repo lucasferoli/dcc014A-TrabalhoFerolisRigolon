@@ -15,9 +15,7 @@ class ReguaPuzzleBuscaIDAEstrela:
         self.custo_final = 0
 
     def eh_meta(self, estado):
-        """
-        Verifica se o estado é uma meta: nenhum 'B' à direita de qualquer 'A'[cite: 8].
-        """
+
         encontrou_A = False
         for char in estado:
             if char == 'A':
@@ -27,9 +25,7 @@ class ReguaPuzzleBuscaIDAEstrela:
         return True
 
     def heuristica(self, estado):
-        """
-        Heurística h(n): Conta quantos blocos 'B' estão à direita de um bloco 'A'.
-        """
+
         custo_h = 0
         encontrou_A = False
         for char in estado:
@@ -40,10 +36,7 @@ class ReguaPuzzleBuscaIDAEstrela:
         return custo_h
 
     def obter_sucessores(self, estado):
-        """
-        Gera os estados sucessores válidos[cite: 19].
-        Regra: distância máxima de N posições até o espaço vazio '_'[cite: 12].
-        """
+
         sucessores = []
         idx_vazio = estado.index('_')
         tamanho = len(estado)
@@ -68,10 +61,8 @@ class ReguaPuzzleBuscaIDAEstrela:
 
         tempo_inicio = time.time()
 
-        # O limite inicial é a heurística do estado inicial
         limite_f = self.heuristica(self.estado_inicial)
         
-        # Estruturas para controlar o caminho atual e evitar ciclos
         caminho_atual = [self.estado_inicial]
         visitados_ramo = {self.estado_inicial}
         self.nos_visitados += 1
@@ -79,7 +70,6 @@ class ReguaPuzzleBuscaIDAEstrela:
         solucao = None
 
         while True:
-            # Chama a busca recursiva em profundidade com o limite atual
             resultado, novo_limite = self._ida_recursivo(
                 estado=self.estado_inicial, 
                 custo_g=0, 
