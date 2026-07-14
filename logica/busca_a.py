@@ -6,15 +6,12 @@ class ReguaPuzzleBuscaAEstrela:
         self.estado_inicial = tuple(estado_inicial)
         self.N = (len(estado_inicial) - 1) // 2
 
-        # Estatísticas globais
         self.nos_expandidos = 0
         self.nos_visitados = 0
         self.total_filhos_gerados = 0
 
     def eh_meta(self, estado):
-        """
-        Verifica se o estado é uma meta: nenhum 'B' pode estar à direita de qualquer 'A'.
-        """
+
         encontrou_A = False
         for char in estado:
             if char == 'A':
@@ -24,12 +21,7 @@ class ReguaPuzzleBuscaAEstrela:
         return True
 
     def heuristica(self, estado):
-        """
-        Heurística h(n): Conta quantos blocos 'B' estão à direita de um bloco 'A'.
-        Como cada um desses blocos precisa se mover no mínimo 1 casa para resolver o problema,
-        o custo total real sempre será maior ou igual a essa contagem.
-        Portanto, a heurística é admissível.
-        """
+
         custo_h = 0
         encontrou_A = False
         for char in estado:
@@ -40,11 +32,7 @@ class ReguaPuzzleBuscaAEstrela:
         return custo_h
 
     def obter_sucessores(self, estado):
-        """
-        Gera os estados sucessores válidos e os custos dos movimentos.
-        Regra: distância máxima de N posições até o espaço vazio '_'[cite: 12].
-        O custo de um pulo é igual à distância percorrida.
-        """
+
         sucessores = []
         idx_vazio = estado.index('_')
         tamanho = len(estado)
@@ -54,7 +42,7 @@ class ReguaPuzzleBuscaAEstrela:
                 continue
 
             distancia = abs(idx_vazio - idx_bloco)
-            if distancia <= self.N: # [cite: 12]
+            if distancia <= self.N: 
                 novo_estado = list(estado)
                 novo_estado[idx_vazio], novo_estado[idx_bloco] = novo_estado[idx_bloco], novo_estado[idx_vazio]
                 sucessores.append((tuple(novo_estado), distancia)) # 
@@ -68,11 +56,8 @@ class ReguaPuzzleBuscaAEstrela:
 
         tempo_inicio = time.time()
 
-        # Dicionário de fechados: armazena o menor custo g(n) conhecido para chegar a cada estado
         custos_otimos = {}
 
-        # Fila de prioridades (Heap). A chave primária é f(n) = g(n) + h(n).
-        # Formato: (custo_f, id_unico, custo_g, estado_atual, caminho)
         fila_prioridade = []
         id_contador = 0
 
@@ -88,11 +73,9 @@ class ReguaPuzzleBuscaAEstrela:
         while fila_prioridade:
             custo_f_atual, _, custo_g_atual, estado_atual, caminho_atual = heapq.heappop(fila_prioridade)
 
-            # Se achamos um caminho mais caro do que um já registrado anteriormente, ignoramos
             if custo_g_atual > custos_otimos.get(estado_atual, float('inf')):
                 continue
 
-            # Validação de meta
             if self.eh_meta(estado_atual):
                 solucao = {
                     "caminho": caminho_atual,
@@ -101,7 +84,6 @@ class ReguaPuzzleBuscaAEstrela:
                 }
                 break
 
-            # Expansão do nó
             self.nos_expandidos += 1
             sucessores = self.obter_sucessores(estado_atual)
             self.total_filhos_gerados += len(sucessores)
@@ -109,7 +91,6 @@ class ReguaPuzzleBuscaAEstrela:
             for proximo_estado, custo_movimento in sucessores:
                 novo_custo_g = custo_g_atual + custo_movimento
                 
-                # Regra de atualização: se o estado é inédito ou achamos um trajeto mais barato (g menor)
                 if proximo_estado not in custos_otimos or novo_custo_g < custos_otimos[proximo_estado]:
                     custos_otimos[proximo_estado] = novo_custo_g
                     self.nos_visitados += 1
@@ -149,7 +130,6 @@ class ReguaPuzzleBuscaAEstrela:
                 "tempo_execucao": tempo_execucao
             }
 
-# --- Bloco de teste direto (Opcional) ---
 if __name__ == "__main__":
     estado_inicial_teste = ['B', 'A', '_', 'A', 'B']
     puzzle = ReguaPuzzleBuscaAEstrela(estado_inicial_teste)
