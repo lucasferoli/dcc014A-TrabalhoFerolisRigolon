@@ -1,7 +1,6 @@
 import time
 import sys
 
-# Aumenta o limite de recursão por segurança em tabuleiros maiores
 sys.setrecursionlimit(10000)
 
 class ReguaPuzzleBuscaIDAEstrela:
@@ -98,10 +97,9 @@ class ReguaPuzzleBuscaIDAEstrela:
                 break
             
             if resultado == "NAO_ENCONTRADO":
-                # O espaço de busca esgotou e não achamos nada
+ 
                 break
 
-            # Se deu "CORTE", atualizamos o limite para o menor valor que excedeu o limite anterior
             limite_f = novo_limite
 
         tempo_fim = time.time()
@@ -131,12 +129,11 @@ class ReguaPuzzleBuscaIDAEstrela:
     def _ida_recursivo(self, estado, custo_g, limite_f, caminho, visitados_ramo):
         f_atual = custo_g + self.heuristica(estado)
 
-        # Se o custo estimado ultrapassar o limite, cortamos a busca aqui
         if f_atual > limite_f:
             return "CORTE", f_atual
 
         if self.eh_meta(estado):
-            self.custo_final = custo_g # Como h=0 na meta, o custo g é o custo real
+            self.custo_final = custo_g 
             return "ENCONTRADO", f_atual
 
         min_f_excedente = float('inf')
@@ -144,7 +141,6 @@ class ReguaPuzzleBuscaIDAEstrela:
         sucessores = self.obter_sucessores(estado)
         self.total_filhos_gerados += len(sucessores)
 
-        # Ordenar os sucessores pelo f estimado ajuda a encontrar a solução mais rápido
         sucessores.sort(key=lambda x: self.heuristica(x[0]) + custo_g + x[1])
 
         for proximo_estado, custo_movimento in sucessores:
@@ -167,19 +163,17 @@ class ReguaPuzzleBuscaIDAEstrela:
                 if limite_filho < min_f_excedente:
                     min_f_excedente = limite_filho
 
-                # Backtracking: remove o estado ao voltar da recursão
+                
                 caminho.pop()
                 visitados_ramo.remove(proximo_estado)
 
-        # Se todos os caminhos retornarem infinito, é porque não tem solução
         if min_f_excedente == float('inf'):
             return "NAO_ENCONTRADO", float('inf')
 
         return "CORTE", min_f_excedente
 
-# --- Bloco de teste direto ---
 if __name__ == "__main__":
-    estado_inicial_teste = ['B', 'A', '_', 'A', 'B'] # [cite: 17, 18]
+    estado_inicial_teste = ['B', 'A', '_', 'A', 'B'] 
     puzzle = ReguaPuzzleBuscaIDAEstrela(estado_inicial_teste)
     resultado = puzzle.buscar()
     
