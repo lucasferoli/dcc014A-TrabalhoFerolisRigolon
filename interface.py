@@ -2,12 +2,10 @@ import pygame
 import sys
 import os
 
-# Garantir que a pasta do projeto esteja no sys.path para importar o pacote 'logica'
 PROJETO_ROOT = os.path.dirname(__file__)
 if PROJETO_ROOT not in sys.path:
     sys.path.append(PROJETO_ROOT)
 
-# Importando todas as lógicas
 from logica.busca_bfs import ReguaPuzzleBFS
 from logica.busca_dls import ReguaPuzzleDLS
 from logica.busca_ordenada import ReguaPuzzleBuscaOrdenada
@@ -16,9 +14,7 @@ from logica.busca_a import ReguaPuzzleBuscaAEstrela
 from logica.busca_gulosa import ReguaPuzzleBuscaGulosa
 from logica.busca_ida import ReguaPuzzleBuscaIDAEstrela
 
-# ==========================================
-# FUNÇÃO GERADORA DE ESTADOS INICIAIS
-# ==========================================
+
 def gerar_estado_inicial(N):
     """
     Gera um tabuleiro embaralhado baseado no tamanho N.
@@ -26,23 +22,17 @@ def gerar_estado_inicial(N):
     Ex: N=2 -> ['B', 'A', '_', 'A', 'B']
     """
     estado = []
-    # Metade esquerda
     for i in range(N):
         estado.append('A' if (N - i) % 2 != 0 else 'B')
-    # Centro
     estado.append('_')
-    # Metade direita
     for i in range(N):
         estado.append('B' if (N - i) % 2 != 0 else 'A')
     return estado
 
-# ==========================================
-# 1. INTERFACE VISUAL COM PYGAME
-# ==========================================
+
 def iniciar_interface():
     pygame.init()
     
-    # Configurações da Tela (Aumentada para caber o seletor e botões)
     LARGURA, ALTURA = 1000, 700
     TELA = pygame.display.set_mode((LARGURA, ALTURA))
     pygame.display.set_caption("Resolução - Régua Puzzle")
@@ -61,9 +51,6 @@ def iniciar_interface():
     FONTE_TITULO = pygame.font.Font(None, 60)
     FONTE_PEQUENA = pygame.font.Font(None, 30)
 
-    # ---------------------------------------------------
-    # TELA 1: MENU DE SELEÇÃO
-    # ---------------------------------------------------
     def menu_selecao():
         largura_botao, altura_botao = 400, 50
         centro_x = LARGURA // 2 - largura_botao // 2
@@ -73,7 +60,6 @@ def iniciar_interface():
         btn_menos = pygame.Rect(LARGURA // 2 - 120, 100, 50, 40)
         btn_mais = pygame.Rect(LARGURA // 2 + 70, 100, 50, 40)
         
-        # Botões de algoritmos (deslocados mais para baixo)
         botoes = [
             {"texto": "Busca em Largura (BFS)", "id": "BFS", "rect": pygame.Rect(centro_x, 260, largura_botao, altura_botao)},
             {"texto": "Profundidade Limitada (DLS)", "id": "DLS", "rect": pygame.Rect(centro_x, 320, largura_botao, altura_botao)},
@@ -90,7 +76,6 @@ def iniciar_interface():
         while rodando_menu:
             TELA.fill(COR_FUNDO)
             
-            # Título
             titulo = FONTE_TITULO.render("Régua Puzzle - Configuração", True, (50, 50, 50))
             TELA.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 30))
 
@@ -104,8 +89,6 @@ def iniciar_interface():
                 if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                     mouse_click = True
 
-            # --- DESENHO DO SELETOR DE N ---
-            # Botão Menos
             cor_menos = COR_BOTAO_HOVER if btn_menos.collidepoint(mouse_pos) else COR_BOTAO
             pygame.draw.rect(TELA, cor_menos, btn_menos, border_radius=5)
             texto_menos = FONTE_MENU.render("-", True, COR_TEXTO)
@@ -113,26 +96,21 @@ def iniciar_interface():
             if btn_menos.collidepoint(mouse_pos) and mouse_click and N_atual > 1:
                 N_atual -= 1
 
-            # Texto do N atual
             texto_n = FONTE_MENU.render(f"N = {N_atual}", True, (50, 50, 50))
             TELA.blit(texto_n, texto_n.get_rect(center=(LARGURA // 2, 120)))
 
-            # Botão Mais
             cor_mais = COR_BOTAO_HOVER if btn_mais.collidepoint(mouse_pos) else COR_BOTAO
             pygame.draw.rect(TELA, cor_mais, btn_mais, border_radius=5)
             texto_mais = FONTE_MENU.render("+", True, COR_TEXTO)
             TELA.blit(texto_mais, texto_mais.get_rect(center=btn_mais.center))
             if btn_mais.collidepoint(mouse_pos) and mouse_click and N_atual < 5: 
-                # Limitamos N a 5 para evitar travamentos, pois tabuleiros gigantes demoram muito
                 N_atual += 1
 
-            # Preview do Array Gerado
             estado_preview = gerar_estado_inicial(N_atual)
             texto_preview = FONTE_PEQUENA.render(f"Estado Inicial: {' '.join(estado_preview)}", True, (100, 100, 100))
             TELA.blit(texto_preview, texto_preview.get_rect(center=(LARGURA // 2, 180)))
             pygame.draw.line(TELA, (200, 200, 200), (LARGURA//2 - 300, 220), (LARGURA//2 + 300, 220), 2)
 
-            # --- DESENHO DOS BOTÕES DE ALGORITMO ---
             for botao in botoes:
                 cor_atual = COR_BOTAO
                 
@@ -152,20 +130,16 @@ def iniciar_interface():
             
         return escolha_algoritmo, gerar_estado_inicial(N_atual)
 
-    # ---------------------------------------------------
-    # TELA 2: ANIMAÇÃO DA RESOLUÇÃO
-    # ---------------------------------------------------
+
     def desenhar_estado(estado, passo_atual, total_passos, nome_algoritmo, rect_voltar, cor_voltar):
         TELA.fill(COR_FUNDO)
         
-        # Ajusta o tamanho do bloco se o N for muito grande para caber na tela
         max_blocos = len(estado)
         tamanho_bloco = min(100, (LARGURA - 100) // max_blocos - 10)
         espaco = 10
         margem_x = (LARGURA - (max_blocos * tamanho_bloco + (max_blocos - 1) * espaco)) // 2
         margem_y = (ALTURA - tamanho_bloco) // 2
 
-        # Reduz a fonte do bloco se ele ficar pequeno
         fonte_dinamica = pygame.font.Font(None, int(tamanho_bloco * 0.8))
 
         for i, char in enumerate(estado):
@@ -183,7 +157,6 @@ def iniciar_interface():
                 rect_texto = texto.get_rect(center=(x + tamanho_bloco // 2, y + tamanho_bloco // 2))
                 TELA.blit(texto, rect_texto)
 
-        # Textos informativos
         fonte_info = pygame.font.Font(None, 36)
         texto_passo = fonte_info.render(f"Passo: {passo_atual} / {total_passos}", True, (50, 50, 50))
         texto_alg = fonte_info.render(f"Algoritmo: {nome_algoritmo}", True, (50, 50, 50))
@@ -225,9 +198,7 @@ def iniciar_interface():
         print(f"Tempo de execucao          : {resultado.get('tempo_execucao', 0):.6f} segundos")
         print("==================================================\n")
 
-    # --- FLUXO PRINCIPAL (LOOP MESTRE) ---
     while True:
-        # Agora o menu retorna DUAS coisas: o algoritmo e o estado configurado
         algoritmo_escolhido, estado_inicial = menu_selecao()
         
         print(f"Calculando solução para {estado_inicial} usando {algoritmo_escolhido}...")
@@ -239,7 +210,6 @@ def iniciar_interface():
             resultado = puzzle.buscar()
         elif algoritmo_escolhido == "DLS":
             puzzle = ReguaPuzzleDLS(estado_inicial)
-            # DLS pode precisar de um limite muito maior se o N for grande
             limite_dinamico = len(estado_inicial) * 4 
             resultado = puzzle.buscar(limite_profundidade=limite_dinamico)
         elif algoritmo_escolhido == "ORD":
@@ -271,7 +241,6 @@ def iniciar_interface():
         relogio = pygame.time.Clock()
         ultimo_tempo = pygame.time.get_ticks()
         
-        # Aumentamos a velocidade da animação para N maiores
         intervalo_animacao = max(200, 1000 - (len(estado_inicial) * 100)) 
 
         largura_voltar, altura_voltar = 160, 40
